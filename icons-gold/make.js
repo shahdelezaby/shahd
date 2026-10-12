@@ -3,7 +3,7 @@ const C='#B18B58';
 const wrap=b=>`<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none" stroke="${C}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">${b}</svg>`;
 const icons={
  car:`<path d="M19 70H10a4 4 0 0 1-4-4V52c0-4 3-7 7-8l8-14c2-3 5-5 9-5h28c3 0 6 1 8 4l11 13 11 3c3 1 5 4 5 7v12a4 4 0 0 1-4 4h-9"/><circle cx="26" cy="70" r="7"/><circle cx="70" cy="70" r="7"/><path d="M33 70h30"/>`,
- phone:`<rect x="28" y="6" width="40" height="84" rx="6"/><circle cx="48" cy="77" r="1" fill="${C}"/>`,
+ phone:`<rect x="19" y="6" width="58" height="84" rx="6"/><circle cx="48" cy="73" r="1.6" fill="${C}"/>`,
  home:`<path d="M10 42 48 8l38 34v42a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6z"/><path d="M38 90V54h20v36"/>`,
  bell:`<path d="M48 8c-14 0-24 11-24 25v18c0 9-4 17-10 25h68c-6-8-10-16-10-25V33C72 19 62 8 48 8z"/><path d="M42 86a6 6 0 0 0 12 0"/>`,
  scan:`<path d="M10 28V16a6 6 0 0 1 6-6h12M68 10h12a6 6 0 0 1 6 6v12M86 68v12a6 6 0 0 1-6 6H68M28 86H16a6 6 0 0 1-6-6V68"/><circle cx="45" cy="45" r="12"/><path d="m54 54 10 10"/>`,
