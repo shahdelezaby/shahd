@@ -23,9 +23,11 @@ const p=await b.newPage({deviceScaleFactor:2,viewport:{width:W,height:H}});
 for(const [k,v] of Object.entries(icons)){
  await p.setContent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><g id="g">${v}</g></svg>`);
  const bb=await p.evaluate(()=>{const r=document.getElementById('g').getBBox();return {x:r.x,y:r.y,w:r.width,h:r.height};});
- const right=(bb.x+bb.w+SW/2)*scale, cy=(bb.y+bb.h/2)*scale;
+ // Wide icons (car, card) are scaled up to the full band height; stroke is thinned to keep the same line weight.
+ const sc=['car','card'].includes(k)?(BAND-SW*scale)/bb.h:scale, sw=SW*scale/sc;
+ const right=(bb.x+bb.w+sw/2)*sc, cy=(bb.y+bb.h/2)*sc;
  const tx=W-2-right, ty=H/2-cy;
- fs.writeFileSync(k+'.svg',`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${scale.toFixed(4)})" fill="none" stroke="${C}" stroke-width="${SW}" stroke-linecap="round" stroke-linejoin="round">${v}</g></svg>`);
+ fs.writeFileSync(k+'.svg',`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${sc.toFixed(4)})" fill="none" stroke="${C}" stroke-width="${sw.toFixed(3)}" stroke-linecap="round" stroke-linejoin="round">${v}</g></svg>`);
 }
 for(const [dir,w,h] of [['',W,H],['square/',96,96]]) for(const k of Object.keys(icons)){await p.setContent(`<html><body style="margin:0;background:transparent">${fs.readFileSync(dir+k+'.svg')}</body></html>`);
 await p.screenshot({path:dir+k+'.png',omitBackground:true,clip:{x:0,y:0,width:w,height:h}});}
