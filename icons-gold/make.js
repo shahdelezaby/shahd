@@ -12,16 +12,24 @@ const icons={
  parking:`<circle cx="48" cy="48" r="42"/><path d="M38 72V24h14a12 12 0 0 1 0 24H38"/>`,
  pin:`<path d="M48 90S16 58 16 38a32 32 0 0 1 64 0c0 20-32 52-32 52z"/><circle cx="48" cy="38" r="11"/>`,
 };
-// Wide canvas matching the original Mailchimp image blocks: 4:1, icon right-aligned with space beside it.
-const wide=b=>`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100" viewBox="0 0 400 100"><g transform="translate(272 0) scale(${100/96})" fill="none" stroke="${C}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">${b}</g></svg>`;
 fs.mkdirSync('square',{recursive:true});
-for(const [k,v] of Object.entries(icons)){fs.writeFileSync('square/'+k+'.svg',wrap(v));fs.writeFileSync(k+'.svg',wide(v));}
+for(const [k,v] of Object.entries(icons)) fs.writeFileSync('square/'+k+'.svg',wrap(v));
 const {chromium}=require('/opt/node-tools/node_modules/playwright');
 (async()=>{const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'}).catch(()=>chromium.launch());
-const p=await b.newPage({deviceScaleFactor:2,viewport:{width:400,height:100}});
-for(const [dir,w,h] of [['',400,100],['square/',96,96]]) for(const k of Object.keys(icons)){await p.setContent(`<html><body style="margin:0;background:transparent">${fs.readFileSync(dir+k+'.svg')}</body></html>`);
+// Wide canvas matching the original Mailchimp image blocks (~3.6:1). Icons share one scale, sit almost
+// flush with the right edge (like the column text) and are centred vertically, filling ~82% of the height.
+const W=360,H=100,BAND=82,SW=3.5,scale=BAND/85.5;
+const p=await b.newPage({deviceScaleFactor:2,viewport:{width:W,height:H}});
+for(const [k,v] of Object.entries(icons)){
+ await p.setContent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><g id="g">${v}</g></svg>`);
+ const bb=await p.evaluate(()=>{const r=document.getElementById('g').getBBox();return {x:r.x,y:r.y,w:r.width,h:r.height};});
+ const right=(bb.x+bb.w+SW/2)*scale, cy=(bb.y+bb.h/2)*scale;
+ const tx=W-2-right, ty=H/2-cy;
+ fs.writeFileSync(k+'.svg',`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${scale.toFixed(4)})" fill="none" stroke="${C}" stroke-width="${SW}" stroke-linecap="round" stroke-linejoin="round">${v}</g></svg>`);
+}
+for(const [dir,w,h] of [['',W,H],['square/',96,96]]) for(const k of Object.keys(icons)){await p.setContent(`<html><body style="margin:0;background:transparent">${fs.readFileSync(dir+k+'.svg')}</body></html>`);
 await p.screenshot({path:dir+k+'.png',omitBackground:true,clip:{x:0,y:0,width:w,height:h}});}
 // preview sheet
 await p.setViewportSize({width:1300,height:400});
-await p.setContent(`<body style="margin:0;background:#F8F2E8;display:grid;grid-template-columns:repeat(3,400px);gap:20px;padding:20px">${Object.keys(icons).map(k=>`<img src="data:image/svg+xml;base64,${Buffer.from(fs.readFileSync(k+'.svg')).toString('base64')}" width=400 style="outline:1px dashed #ccc">`).join('')}</body>`);
+await p.setContent(`<body style="margin:0;background:#F8F2E8;display:grid;grid-template-columns:repeat(3,360px);gap:20px;padding:20px">${Object.keys(icons).map(k=>`<img src="data:image/svg+xml;base64,${Buffer.from(fs.readFileSync(k+'.svg')).toString('base64')}" width=360 style="outline:1px dashed #ccc">`).join('')}</body>`);
 await p.screenshot({path:'preview.png',fullPage:true});await b.close();})();
